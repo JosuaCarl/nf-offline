@@ -104,7 +104,6 @@ nextflowPlugin {
     provider = 'QBiC'
     className = 'qbic.offline.OfflinePlugin'
     extensionPoints = [
-            'qbic.offline.OfflineFactory',
             'qbic.offline.OfflineExtension',
             'qbic.offline.OfflineConfig'
     ]

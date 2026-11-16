@@ -100,7 +100,6 @@ class OfflinePlugin extends BasePlugin {
      *
      * @return A list of Strings with command that are implemented in exec()
      */
-    @Override
     List<String> getCommands() {
         return OfflineCLI.commands
     }
@@ -142,6 +141,4 @@ class OfflinePlugin extends BasePlugin {
             }
         }
     }
-}
-
 }
