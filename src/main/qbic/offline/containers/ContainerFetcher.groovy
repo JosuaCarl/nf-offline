@@ -1,103 +1,109 @@
 package qbic.offline.containers
 
-import java.util.regex.Pattern
+import groovy.util.logging.Slf4j
+import nextflow.container.inspect.ContainersInspector
+import nextflow.container.resolver.ContainerMeta
+import nextflow.processor.TaskRun
+import nextflow.script.ProcessDef
+import nextflow.script.ScriptMeta
+import org.codehaus.groovy.util.ListHashMap
+import org.jsoup.Progress
+import qbic.offline.display.ProgressBar
 
-class ContainerFetcher {
-    Map<String, String> containerRegistryURLs
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Executors
 
-    List<String> baseRegistryKeys 
+/**
+ * A class to fetch containers of a pipeline run.
+ */
+@Slf4j
+class ContainerFetcher extends ContainersInspector {
+    ContainersConfig containersConfig
     
-    Map config
-
-    String containerizationEngine
-
-    ContainerFetcher(Map config, String containerizationEngine = 'apptainer'){
-        this.config = config
-        this.containerizationEngine = containerizationEngine
+    ContainerFetcher(ContainersConfig containersConfig){
+        super(containersConfig.download)
+        withFormat(containersConfig.format)
         
-        this.containerRegistryURLs = [
-                QUAY_IO: 'quay.io',
-                SEQERA_DOCKER: 'community.wave.seqera.io/library',
-                SEQERA_SINGULARITY: 'community-cr-prod.seqera.io/docker/registry/v2',
-                GALAXY_SINGULARITY: 'depot.galaxyproject.org/singularity',
-        ]
-
-        this.baseRegistryKeys = [
-                'docker.registry',
-                'podman.registry',
-                'apptainer.registry',
-                'singularity.registry',
-        ]
+        this.containersConfig = containersConfig
     }
 
     /**
-     * Navigate though config and check out registry key content
-     * @param config
-     * @param registryKeys
-     * @return
+     *
+     * Wrapper method to fetch the data (and download) all containers of a run.
+     * Similar to {@link ContainersInspector#getContainers()}.
+     *
+     * @param processes A set of processes for which containers are to be fetched.
+     *                  Defaults to {@link ScriptMeta#allProcesses()}.
+     * @return Metadata collection of task containers that were fetched.
      */
-    List<String> getConfigRegistries(List<String> registryKeys) {
-        return registryKeys.collect(
-                { String key -> config.navigate(key) as String }
-        ).findAll(
-                { String value -> value != null }
-        ) as List<String>
-    }
-    
-    static String cleanExtension(String fileName) {
-        // Detect file extension
-        String extension = ".img"
-        if (fileName.contains(".sif")) {
-            extension = ".sif"
-            fileName = fileName.replace('.sif:', '-')
-            fileName = fileName.replace('.sif', '')
-        }
+    List<ContainerMeta> fetchContainers(Set<ProcessDef> processes = ScriptMeta.allProcesses()) {
 
-        // Strip : and / characters
-        fileName = fileName.replace("/", "-").replace(":", "-")
-        // Add file extension
-        fileName = fileName + extension
+        // Collect tasks that have viable containers that need to be fetched
+        List<TaskRun> tasks = new ArrayList<>()
+        for( final process : processes ) {
+            try {
+                // get container preview
+                final TaskRun task = process.createTaskProcessor().createTaskPreview()
 
-        return fileName
-    }
-
-    static String getContainerFilename(String container, Set<String> registry){        
-        // Strip URI prefix
-        String fileName = container.replaceAll("^.*:${Pattern.quote('//')}", '')
-
-        // Clean the file extension.
-        fileName = cleanExtension(fileName)
-        
-        // Trim potential registries from the name for consistency.
-        // This will allow pipelines to work offline without symlinked images,
-        // if docker.registry / singularity.registry are set to empty strings at runtime, which can be included in the HPC config profiles easily.
-        if (registry) {
-            registry = registry.collect({ String reg ->
-                "^${Pattern.quote(reg)}-?".replace("/", "[/-]")
-            })
-            String trimPattern = registry.join('|')
-            fileName = fileName.replaceAll(trimPattern,  "")
-        }
-
-        return fileName
-    }
-    
-    void fetchContainers() {
-        Set<String> registryURLs
-        List<String> registryKeys
-        if (containerizationEngine in ['docker']) {
-            registryURLs = ['QUAY_IO', 'SEQERA_DOCKER'].collect( { String key -> containerRegistryURLs.get(key) } ) as Set<String>
-            registryKeys = this.baseRegistryKeys.subList(0, 2)
-        }
-        else {
-            registryKeys = this.baseRegistryKeys
-            registryURLs = containerRegistryURLs.values() as Set<String>
+                // Fetch name of image
+                final String imageName = task.config.getContainer()
+                
+                if( imageName ) {
+                    tasks.add(task)
+                }
+            }
+            catch( Exception e ) {
+                if( containersConfig.ignoreErrors )
+                    log.warn "Unable to inspect container for task `$process.name` - cause: ${e.message}"
+                else
+                    throw e
+            }
         }
         
-        registryURLs.addAll( getConfigRegistries(registryKeys) )
+        // Wait for containers to be downloaded
+        if( containersConfig.download ) {
+            await(tasks)
+        }
         
+        List<ContainerMeta> containerMetadata = tasks.collect( { TaskRun task -> task.containerMeta() } )
         
-        ...
+        return containerMetadata
     }
 
+
+    protected void await(List<TaskRun> tasks) {
+        if( !tasks )
+            return
+        final executor = Executors.newFixedThreadPool(10)
+        CompletableFuture<Void>[] futures = new CompletableFuture<Void>[tasks.size()]
+        for( int i=0; i<tasks.size(); i++ ) {
+            final t = tasks[i]
+            futures[i] = CompletableFuture.runAsync(() -> {
+                try {
+                    int c=0
+                    while( !t.isContainerReady() ) {
+                        Thread.sleep(c++< 10 ? 1_000 : 5_000)
+                    }
+                }
+                catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }, executor)
+        }
+
+        // Wait for all tasks to complete
+        CompletableFuture<Void> allFutures = CompletableFuture.allOf(futures)
+
+        ProgressBar progressBar = new ProgressBar(futures.size())
+        while( !allFutures.isDone() ) {
+            progressBar.setProgress( futures.count( { CompletableFuture<Void> future -> future.isDone() }) as int )
+            allFutures.wait(1_000)
+        }
+        progressBar.done()
+        
+        // Block until all tasks are completed
+        allFutures.join();  // This will wait until all tasks complete
+        // Shut down the executor
+        executor.shutdown()
+    }
 }
