@@ -1,5 +1,6 @@
 package qbic.offline.display
 
+
 import java.math.RoundingMode
 
 class ProgressBar {
@@ -13,7 +14,7 @@ class ProgressBar {
     
     StringBuilder currentProgressBar
     
-    ProgressBar(BigDecimal total, int numSteps = 20) {
+    ProgressBar(Number total, int numSteps = 20) {
         this.total = total
         this.progress = 0
         
@@ -33,13 +34,14 @@ class ProgressBar {
        return (100 * progress / total).setScale(0, RoundingMode.CEILING) as Integer
     }
     
-    void setProgress(BigDecimal progress, boolean render=true) {
-        int difference = progress - this.progress
+    String setProgress(Number progress, boolean render=true) {
+        BigDecimal difference = progress - this.progress
         this.progress = progress
         
         if (render || difference >= stepSize) {
-            renderProgress()
+            return renderProgress()
         }
+        return currentProgressBar.toString()
     }
     
     String renderProgress() {
@@ -55,13 +57,17 @@ class ProgressBar {
                 .append('\r')
         
         String progressBar = currentProgressBar.toString()
-        print(progressBar)
+        System.out.print(progressBar)
         
         return progressBar
     }
     
-    void done() {
-        print("|${'=' * totalSteps}| 100%\n")
-        print("\n")
+    boolean done() {
+        String progressBar = "|${'=' * totalSteps}| 100%\n"
+        
+        System.out.print(progressBar)
+        System.out.print("\n")
+        
+        return true
     }
 }

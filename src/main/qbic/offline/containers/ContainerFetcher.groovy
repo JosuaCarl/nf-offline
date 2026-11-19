@@ -6,12 +6,10 @@ import nextflow.container.resolver.ContainerMeta
 import nextflow.processor.TaskRun
 import nextflow.script.ProcessDef
 import nextflow.script.ScriptMeta
-import org.codehaus.groovy.util.ListHashMap
-import org.jsoup.Progress
 import qbic.offline.display.ProgressBar
 
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.stream.IntStream
 
 /**
  * A class to fetch containers of a pipeline run.
@@ -70,40 +68,34 @@ class ContainerFetcher extends ContainersInspector {
         return containerMetadata
     }
 
-
+    /**
+     * Override of {@link ContainersInspector#await()} with progress bar.
+     * 
+     * @param tasks
+     */
+    @Override
     protected void await(List<TaskRun> tasks) {
-        if( !tasks )
-            return
-        final executor = Executors.newFixedThreadPool(10)
-        CompletableFuture<Void>[] futures = new CompletableFuture<Void>[tasks.size()]
-        for( int i=0; i<tasks.size(); i++ ) {
-            final t = tasks[i]
-            futures[i] = CompletableFuture.runAsync(() -> {
-                try {
-                    int c=0
-                    while( !t.isContainerReady() ) {
-                        Thread.sleep(c++< 10 ? 1_000 : 5_000)
-                    }
-                }
-                catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
-            }, executor)
-        }
-
-        // Wait for all tasks to complete
-        CompletableFuture<Void> allFutures = CompletableFuture.allOf(futures)
-
-        ProgressBar progressBar = new ProgressBar(futures.size())
-        while( !allFutures.isDone() ) {
-            progressBar.setProgress( futures.count( { CompletableFuture<Void> future -> future.isDone() }) as int )
-            allFutures.wait(1_000)
-        }
-        progressBar.done()
+        // Track progress
+        ProgressBar progressBar = new ProgressBar(tasks.size())
+        AtomicInteger completedTasks = new AtomicInteger(0)
         
-        // Block until all tasks are completed
-        allFutures.join();  // This will wait until all tasks complete
-        // Shut down the executor
-        executor.shutdown()
+        // Process downloads in parallel
+        IntStream.range(0, tasks.size()).parallel().forEach({ Integer i ->
+            final TaskRun task = tasks[i]
+            try {
+                int c = 0
+                while (!task.isContainerReady()) {
+                    Thread.sleep(c++ < 10 ? 1_000 : 5_000)
+                }
+                int currentlyCompletedTasks = completedTasks.getAndAdd(1)
+                progressBar.setProgress(currentlyCompletedTasks)
+            }
+            catch (InterruptedException ignore) {
+                Thread.currentThread().interrupt()
+            }
+        })
+
+        // Complete progress
+        progressBar.done()
     }
 }
