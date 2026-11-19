@@ -33,7 +33,7 @@ class ContainersConfig implements ConfigScope {
         handler = new ContainerHandler(containerConfig)
         
         download = containersConfig.containsKey('download') ? containersConfig.get('download') : true
-        download = containersConfig.containsKey('format') ? containersConfig.get('format') : 'json'
-        download = containersConfig.containsKey('ignoreErrors') ? containersConfig.get('ignoreErrors') : false
+        format = containersConfig.containsKey('format') ? containersConfig.get('format') : 'json'
+        ignoreErrors = containersConfig.containsKey('ignoreErrors') ? containersConfig.get('ignoreErrors') : false
     }
 }
