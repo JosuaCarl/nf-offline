@@ -16,7 +16,7 @@
 
 plugins {
     // Apply the groovy plugin to add support for Groovy
-    id 'io.nextflow.nextflow-plugin' version '1.0.0-beta.16'
+    id 'io.nextflow.nextflow-plugin' version '1.0.0-beta.15'
     id 'idea'
     id 'groovy'
 }
@@ -102,10 +102,11 @@ nextflowPlugin {
 
     // Plugin metadata
     provider = 'QBiC'
-    className = 'qbic.offline.OfflinePlugin'
+    className = 'groovy.qbic.offline.OfflinePlugin'
     extensionPoints = [
-            'qbic.offline.OfflineExtension',
-            'qbic.offline.OfflineConfig'
+            'groovy.qbic.offline.OfflineFactory',
+            'groovy.qbic.offline.OfflineExtension',
+            'groovy.qbic.offline.OfflineConfig'
     ]
 }
 
