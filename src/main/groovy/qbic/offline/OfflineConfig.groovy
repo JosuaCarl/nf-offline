@@ -1,4 +1,4 @@
-package groovy.qbic.offline
+package qbic.offline
 
 import groovy.util.logging.Slf4j
 import nextflow.Session
@@ -7,7 +7,7 @@ import nextflow.config.spec.ConfigScope
 import nextflow.config.spec.ScopeName
 import nextflow.script.WorkflowMetadata
 import nextflow.script.dsl.Description
-import groovy.qbic.offline.containers.ContainersConfig
+import qbic.offline.containers.ContainersConfig
 
 import java.nio.file.Path
 

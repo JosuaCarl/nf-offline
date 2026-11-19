@@ -1,9 +1,9 @@
-package groovy.qbic.offline
+package qbic.offline
 
 import nextflow.Session
 import nextflow.trace.TraceObserverFactoryV2
 import nextflow.trace.TraceObserverV2
-import groovy.qbic.offline.logging.LoggingAdapter
+import qbic.offline.logging.LoggingAdapter
 
 class OfflineFactory implements TraceObserverFactoryV2 {    
     /**

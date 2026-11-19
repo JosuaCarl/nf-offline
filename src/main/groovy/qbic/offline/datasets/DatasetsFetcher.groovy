@@ -1,4 +1,4 @@
-package groovy.qbic.offline.datasets
+package qbic.offline.datasets
 
 class DatasetsFetcher {
 }

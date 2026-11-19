@@ -1,4 +1,4 @@
-package groovy.qbic.offline.plugins
+package qbic.offline.plugins
 
 class PluginsFinder {
 }

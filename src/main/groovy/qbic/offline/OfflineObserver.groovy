@@ -1,4 +1,4 @@
-package groovy.qbic.offline
+package qbic.offline
 
 import nextflow.Session
 import nextflow.trace.TraceObserverV2

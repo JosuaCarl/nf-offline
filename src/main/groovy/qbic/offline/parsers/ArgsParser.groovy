@@ -1,4 +1,4 @@
-package groovy.qbic.offline.parsers
+package qbic.offline.parsers
 
 /**
  * Parse command line arguments for the plugin

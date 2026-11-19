@@ -1,4 +1,4 @@
-package groovy.qbic.offline.logging
+package qbic.offline.logging
 
 import ch.qos.logback.classic.Logger
 import ch.qos.logback.classic.LoggerContext

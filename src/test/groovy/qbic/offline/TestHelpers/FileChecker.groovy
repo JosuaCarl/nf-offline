@@ -14,17 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package groovy.qbic.offline.TestHelpers
+package qbic.offline.TestHelpers
 
 import groovy.yaml.YamlSlurper
 import org.opentest4j.AssertionFailedError
 import org.yaml.snakeyaml.Yaml
 
-import java.lang.reflect.Field
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
-import java.security.MessageDigest
 
 /**
  * Checksum checker to compare and generate checksums (for files) and more

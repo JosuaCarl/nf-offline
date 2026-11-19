@@ -1,4 +1,4 @@
-package groovy.qbic.offline.display
+package qbic.offline.display
 
 
 import java.math.RoundingMode

@@ -48,9 +48,9 @@ configurations {
 
 sourceSets {
     main.java.srcDirs = []
-    main.groovy.srcDirs = ['src/main']
+    main.groovy.srcDirs = ['src/main/groovy']
     main.resources.srcDirs = ['src/resources']
-    test.groovy.srcDirs = ['src/test']
+    test.groovy.srcDirs = ['src/test/groovy']
     test.java.srcDirs = []
     test.resources.srcDirs = ['src/testResources']
 }
@@ -86,11 +86,6 @@ dependencies {
 
     testImplementation(testFixtures("io.nextflow:nextflow:$minimumNextflowVersion"))
     testImplementation(testFixtures("io.nextflow:nf-commons:$minimumNextflowVersion"))
-
-    // see https://docs.gradle.org/4.1/userguide/dependency_management.html#sec:module_replacement
-    modules {
-        module('commons-logging:commons-logging') { replacedBy('org.slf4j:jcl-over-slf4j') }
-    }
 }
 
 // Plugin version
@@ -102,11 +97,11 @@ nextflowPlugin {
 
     // Plugin metadata
     provider = 'QBiC'
-    className = 'groovy.qbic.offline.OfflinePlugin'
+    className = 'qbic.offline.OfflinePlugin'
     extensionPoints = [
-            'groovy.qbic.offline.OfflineFactory',
-            'groovy.qbic.offline.OfflineExtension',
-            'groovy.qbic.offline.OfflineConfig'
+            'qbic.offline.OfflineFactory',
+            'qbic.offline.OfflineExtension',
+            'qbic.offline.OfflineConfig'
     ]
 }
 

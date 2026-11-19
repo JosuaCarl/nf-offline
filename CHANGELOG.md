@@ -7,5 +7,6 @@
 - Added ContainerFinder method to fetch containers of run
 
 ### Bugs
+- Logging does not show in terminal (unsolved)
 
 ### Other

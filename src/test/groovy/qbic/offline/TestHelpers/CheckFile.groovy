@@ -1,4 +1,4 @@
-package groovy.qbic.offline.TestHelpers
+package qbic.offline.TestHelpers
 
 import java.nio.file.Path
 import java.security.MessageDigest

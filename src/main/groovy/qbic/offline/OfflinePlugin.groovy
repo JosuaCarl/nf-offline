@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package groovy.qbic.offline
+package qbic.offline
 
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import nextflow.plugin.BasePlugin
 import nextflow.plugin.Plugins
 import org.pf4j.PluginWrapper
-import groovy.qbic.offline.parsers.ArgsParser
+import qbic.offline.parsers.ArgsParser
 
 import java.nio.file.Paths
 

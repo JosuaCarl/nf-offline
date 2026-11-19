@@ -1,4 +1,4 @@
-package groovy.qbic.offline.config
+package qbic.offline.config
 
 class OfflineConfigFile {
 }

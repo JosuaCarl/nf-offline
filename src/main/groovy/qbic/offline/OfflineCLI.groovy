@@ -1,4 +1,4 @@
-package groovy.qbic.offline
+package qbic.offline
 
 import groovy.util.logging.Slf4j
 

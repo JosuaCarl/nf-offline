@@ -1,4 +1,4 @@
-package groovy.qbic.offline.containers
+package qbic.offline.containers
 
 import groovy.util.logging.Slf4j
 import nextflow.Session

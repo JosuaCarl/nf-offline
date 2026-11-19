@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package groovy.qbic.offline
+package qbic.offline
 
 import groovy.transform.CompileStatic
 import nextflow.Session

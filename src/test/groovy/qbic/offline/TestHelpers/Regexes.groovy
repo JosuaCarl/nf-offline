@@ -1,4 +1,4 @@
-package groovy.qbic.offline.TestHelpers
+package qbic.offline.TestHelpers
 
 enum Regexes {
     final static String readAbleDateTimeReport = /"type":"DateTime","unit":"ms","scale":""\},"readable":("\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.?\d*")}/

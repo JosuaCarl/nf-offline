@@ -1,6 +1,6 @@
-package groovy.qbic.offline
+package qbic.offline
 
-import groovy.qbic.offline.containers.ContainerFetcher
+import qbic.offline.containers.ContainerFetcher
 
 class OfflineRunner {
     OfflineConfig offlineConfig

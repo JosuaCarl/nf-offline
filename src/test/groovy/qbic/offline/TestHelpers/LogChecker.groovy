@@ -1,10 +1,10 @@
-package groovy.qbic.offline.TestHelpers
+package qbic.offline.TestHelpers
 
 import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.LoggerContext
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.read.ListAppender
-import groovy.qbic.offline.logging.LoggingAdapter
+import qbic.offline.logging.LoggingAdapter
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 

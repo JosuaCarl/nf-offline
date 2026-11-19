@@ -1,13 +1,13 @@
-package groovy.qbic.offline.containers
+package qbic.offline.containers
 
+import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import nextflow.container.inspect.ContainersInspector
 import nextflow.container.resolver.ContainerMeta
 import nextflow.processor.TaskRun
 import nextflow.script.ProcessDef
 import nextflow.script.ScriptMeta
-import org.slf4j.Logger
-import groovy.qbic.offline.display.ProgressBar
+import qbic.offline.display.ProgressBar
 
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.stream.IntStream
@@ -16,6 +16,7 @@ import java.util.stream.IntStream
  * A class to fetch containers of a pipeline run.
  */
 @Slf4j
+@CompileStatic
 class ContainerFetcher extends ContainersInspector {
     ContainersConfig containersConfig
     
@@ -36,7 +37,6 @@ class ContainerFetcher extends ContainersInspector {
      * @return Metadata collection of task containers that were fetched.
      */
     List<ContainerMeta> fetchContainers(Set<ProcessDef> processes = ScriptMeta.allProcesses()) {
-
         // Collect tasks that have viable containers that need to be fetched
         List<TaskRun> tasks = new ArrayList<>()
         List<ContainerMeta> containersMetadata = new ArrayList<>()
@@ -72,9 +72,9 @@ class ContainerFetcher extends ContainersInspector {
     }
 
     /**
-     * Override of {@link ContainersInspector#await()} with progress bar.
+     * Inspired by {@link ContainersInspector#await()} with progress bar.
      * 
-     * @param tasks
+     * @param tasks 
      */
     static protected void downloadContainers(List<TaskRun> tasks, List<ContainerMeta> containersMetadata) {
         // Track progress
@@ -104,5 +104,26 @@ class ContainerFetcher extends ContainersInspector {
 
         // Complete progress
         progressBar.done()
+    }
+
+    void run() {
+        nextflow.container.inspect.ContainerInspectMode.activate(true)
+        // configure quiet mode
+        nextflow.util.LoggerHelper.setQuiet(true)
+        // setup the target run command
+        final target = new CmdRun()
+        target.launcher = this.launcher
+        target.args = args
+        target.profile = this.profile
+        target.revision = this.revision
+        target.runConfig = this.runConfig
+        target.params = this.params
+        target.paramsFile = this.paramsFile
+        target.preview = true
+        target.previewAction = this.&applyInspect
+        target.ansiLog = false
+        target.skipHistoryFile = true
+        // run it
+        target.run()
     }
 }

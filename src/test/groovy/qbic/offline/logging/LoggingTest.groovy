@@ -1,6 +1,6 @@
-package groovy.qbic.offline.logging
+package qbic.offline.logging
 
-import groovy.qbic.offline.TestHelpers.LogChecker
+import qbic.offline.TestHelpers.LogChecker
 import spock.lang.Specification
 import spock.lang.Stepwise
 

@@ -1,4 +1,4 @@
-package groovy.qbic.offline.containers
+package qbic.offline.containers
 
 import nextflow.Session
 import spock.lang.Specification
